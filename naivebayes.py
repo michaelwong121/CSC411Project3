@@ -14,6 +14,7 @@ def create_dir(dir_name):
         os.makedirs(dir_name)
 
 def split_dataset():
+    # should put equal amount of reviews into each set 
     # create files
     set = ['train', 'test', 'validation']
     set2 = ['neg', 'pos']

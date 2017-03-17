@@ -19,6 +19,7 @@ def get_keyword_set():
     return list(OrderedDict.fromkeys(keyword))
     
 def setup_x_and_y(path, keyword):
+    # use multinomial for y instead
     x_shape = len(keyword)
     x = np.zeros((0, x_shape))
     y = np.zeros((0, 1))
