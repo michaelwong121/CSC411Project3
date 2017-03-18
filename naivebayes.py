@@ -29,22 +29,17 @@ def split_dataset():
     neg = os.listdir(neg_path)
     
     # less than 1000 means copy from neg file
-    idx = np.array(random.permutation(2000))
-    for i in range(1600):
-        if (idx[i] >= 1000):
-            copy2(pos_path + '/' + pos[idx[i]-1000], 'train/pos')
-        else:
-            copy2(neg_path + '/' + neg[idx[i]], 'train/neg')
-    for i in range(1600, 1800):
-        if (idx[i] >= 1000):
-            copy2(pos_path + '/' + pos[idx[i]-1000], 'test/pos')
-        else:
-            copy2(neg_path + '/' + neg[idx[i]], 'test/neg')
-    for i in range(1800, 2000):
-        if (idx[i] >= 1000):
-            copy2(pos_path + '/' + pos[idx[i]-1000], 'validation/pos')
-        else:
-            copy2(neg_path + '/' + neg[idx[i]], 'validation/neg')
+    idx_pos = np.array(random.permutation(1000))
+    idx_neg = np.array(random.permutation(1000))
+    for i in range(800):
+        copy2(pos_path + '/' + pos[idx_pos[i]], 'train/pos')
+        copy2(neg_path + '/' + neg[idx_neg[i]], 'train/neg')
+    for i in range(800, 900):
+        copy2(pos_path + '/' + pos[idx_pos[i]], 'test/pos')
+        copy2(neg_path + '/' + neg[idx_neg[i]], 'test/neg')
+    for i in range(900, 1000):
+        copy2(pos_path + '/' + pos[idx_pos[i]], 'validation/pos')
+        copy2(neg_path + '/' + neg[idx_neg[i]], 'validation/neg')
 
 def get_wordcount(path):
     pos = {}
@@ -144,9 +139,48 @@ train_pos, train_neg = get_wordcount('train')
 #test_pos, test_neg = get_wordcount('test')
 #val_pos, val_neg = get_wordcount('validation')
 
+train_total = {k: train_pos.get(k, 0) + train_neg.get(k, 0) for k in set(train_pos) | set(train_neg)}
+
 #predict_review('test', train_pos, train_neg)
 
+
+
+m = 0.001 # m should be float
+k =  5 # k should be integer
+
+n_train_pos = sum(train_pos.values())
+n_train_neg = sum(train_neg.values())
+n_train_total = n_train_pos + n_train_neg
+
+p_train_pos = n_train_pos / n_train_total
+p_train_neg = n_train_neg / n_train_total
+
+total_p = 0;
+#for key_w in train_total:
+    
+
+# exp(sum(log(P(a_i|class))) + logP(class))) / exp(sum(log(P(a_i))))
+
+correct_prediction = 0
+
 """
+with open('test/pos/cv007_4968.txt') as f:
+    log_sum = 0
+    file_list = re.split('\W+', f.read().lower())
+    file_list.remove('')
+    file_list = list(OrderedDict.fromkeys(file_list))
+    length = len(file_list)
+    for word in file_list:
+        count = 0
+        if word in train_pos:
+            count = train_pos[word]
+        p = (count + m * k) / (n_train_pos + k)
+        log_sum += math.log(p)
+    if (math.exp(log_sum) * p_train_pos >= 0.5):
+        correct_prediction += 1
+print("Pos:", correct_prediction)
+
+
 pos = {}
 with open('test/pos/cv007_4968.txt') as f:
     file_list = re.split('\W+', f.read().lower())
