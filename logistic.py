@@ -11,7 +11,7 @@ def get_keyword_set():
     set = ['pos', 'neg']
     keyword = []
     for dir in set:
-        path = "txt_sentoken/" + dir
+        path = "train/" + dir
         for file in os.listdir(path):
             with open(path + '/' + file) as f:
                 file_list = re.split('\W+', f.read().lower())
@@ -33,7 +33,8 @@ def setup_x_and_y(path, keyword):
                 file_list = re.split('\W+', f.read().lower())
                 file_list.remove('')
                 for word in file_list:
-                    this_x[0][keyword.index(word)] = 1
+                    if word in keyword:
+                        this_x[0][keyword.index(word)] = 1
                 x = np.vstack((x, this_x))
                 one_hot = np.zeros(2)
                 if (dir == "pos"):
@@ -43,24 +44,32 @@ def setup_x_and_y(path, keyword):
                 y = np.vstack((y, one_hot))
                 this_x = np.zeros((1, x_shape)) #reset
     return x, y
+
+def get_train_batch(n, x_train, y_train): # n = image per actor in batch
+    x = zeros((0,x_train.shape[1]))
+    y = zeros((0,y_train.shape[1]))
     
-def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, nhid, alpha, \
-    max_iter, mini_batch_size, lam, W0, b0, W1, b1, part):
-    global train_performance, test_performance, val_performance
+    idx = rn.sample(range(x_train.shape[0]), n)
+    
+    for k in range(n):
+        x = vstack((x, x_train[idx[k]]))
+        y = vstack((y, y_train[idx[k]]))
+    return x, y
+
+
+def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
+    max_iter, print_iter, mini_batch_size, lam, W0, b0):
+    #global train_performance, test_performance, val_performance
     
     x = tf.placeholder(tf.float32, [None, x_train.shape[1]])
         
     layer1 = tf.nn.sigmoid(tf.matmul(x, W0)+b0)
     
-    y = tf.nn.softmax(layer2)
+    y = tf.nn.softmax(layer1)
     y_ = tf.placeholder(tf.float32, [None, y_train.shape[1]])
     
     # regularization/penalty
-    # according to class, weight penalty is used when the network is overfitting
-    # to create overfitting in this current architecture, can increase number of 
-    # neurons (nhid)?
-    
-    decay_penalty =lam*tf.reduce_sum(tf.square(W0))+lam*tf.reduce_sum(tf.square(W1))
+    decay_penalty =lam*tf.reduce_sum(tf.square(W0))
     reg_NLL = -tf.reduce_sum(y_*tf.log(y))+decay_penalty
     
     train_step = tf.train.AdamOptimizer(alpha).minimize(reg_NLL)
@@ -81,22 +90,8 @@ def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, nhid, alpha, \
         batch_xs, batch_ys = get_train_batch(mini_batch_size, x_train, y_train) 
         sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
         
-        if part == 7 and i % 200 == 0:
-            print ("i=",i)
-            print ("Cost:", sess.run(reg_NLL, feed_dict={x: x_train, y_:y_train}))
-            acc_tr = sess.run(accuracy,feed_dict={x: x_train, y_: y_train})
-            train_performance.append(acc_tr * 100)
-            print ("Train:", acc_tr)
-            
-            acc_t = sess.run(accuracy, feed_dict={x: x_test, y_: y_test})
-            test_performance.append(acc_t * 100)
-            print ("Test:", acc_t)
         
-            acc_v = sess.run(accuracy,feed_dict={x: x_val, y_: y_val})
-            val_performance.append(acc_v * 100)
-            print ("Validation:", acc_v)
-        
-        if part == 8 and i % 500 == 0:
+        if i % print_iter == 0:
             print ("i=",i)
             print ("Cost:", sess.run(reg_NLL, feed_dict={x: x_train, y_:y_train}))
             acc_tr = sess.run(accuracy,feed_dict={x: x_train, y_: y_train})
@@ -110,7 +105,32 @@ def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, nhid, alpha, \
         
             print ("Penalty:", sess.run(decay_penalty))
                
-    return sess.run(W0), sess.run(W1)
+    return sess.run(W0)
     
-keyword = get_keyword_set()
+keyword = get_keyword_set() # get training set keyword
+if not os.path.exists("part4_x_train.txt"):
+    x_train, y_train = setup_x_and_y('train', keyword)
+    np.savetxt("part4_x_train.txt", x_train)
+    np.savetxt("part4_y_train.txt", y_train)
+else:
+    x_train = np.loadtxt("part4_x_train.txt")
+    y_train = np.loadtxt("part4_y_train.txt")
+    
 x_test, y_test = setup_x_and_y('test', keyword)
+x_val, y_val = setup_x_and_y('validation', keyword)
+    
+alpha = 0.00001
+max_iter = 30000      
+print_iter = 500 # print every 500 iterations
+mini_batch_size = 50
+lam = 0.000001
+
+np.random.seed(100)
+W0 = tf.Variable(np.random.normal(0.0, 0.1, \
+    (36307, 2)).astype(float32))
+np.random.seed(101)
+b0 = tf.Variable(np.random.normal(0.0, 0.1, \
+    (2)).astype(float32))
+
+grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
+    max_iter, print_iter, mini_batch_size, lam, W0, b0)
