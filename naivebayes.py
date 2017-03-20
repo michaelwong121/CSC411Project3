@@ -21,8 +21,13 @@ count_train_total = 0
 
 
 def main():
-    #part1()
-    #part2()
+    print("Part 1:")
+    part1()
+    print("-----------------------------")
+    print("Part 2:")
+    part2()
+    print("-----------------------------")
+    print("Part 3:")
     part3()
     
 
