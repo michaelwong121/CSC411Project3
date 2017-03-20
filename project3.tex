@@ -68,9 +68,24 @@ The top 10 words that predicts negative are:\\
 
 \section*{Part 4}
 \paragraph{Question}
+Train a Logistic Regression model on the same dataset. For a single movie review, For a single review $r$ the input to the Logistic Regression model will be a $k$-dimensional vector $v$ , where $v[k]=1$ if the $k$-th keyword appears in the review $r$. The set of keywords consists of all the words that appear in all the reviews.
 
+Plot the learning curves (performance vs. iteration) of the Logistic Regression model. Describe how you selected the regularization parameter (and describe the experiments you used to select it).
 
 \paragraph{Answer}
+When working on this part of the project, we first obtained the whole list of keywords from the training set (both positive and negative reviews). Then for each review in the testing and validation set, we will create a $k$-dimensional vector $v$, where $v[k]=1$ if the $k$-th keyword appears in the review. If a review from the test or validation set contains a keyword that isn't in the training keyword set, it would be ignored. We then stack the vectors together to get a `$x$' for each of the training, test, and validation. 
+
+We then used the $x\_train$ to train the model and test the performance on $x\_test, x\_val$. We used tensorflow to implement the architecture of the model. We used one-hot encoding for the output. For the network model, we only have 1 input layer and an output layer that has sigmoid activiation function. We also have a $L2$ penalty for the weight (used as regularization). The training step is done by the Adam Optimizer, which is a variant of gradient descend. Also, each iteration we will take a randomly chosen mini batch from the original training set to speed the process and avoid running into local minima.
+
+When picking the parameter, it's done mostly by trial and error. We tested different values for the parameters, and selected the best one based on the performance on validation.
+
+I ran the training step for 10000 iterations, and the final performance on training set and test set are 100\% and 86\% respectively. The result of the training vs. iteration is summarized below:
+
+\begin{figure*}[h]
+	\centering
+	\includegraphics[scale=0.8]{part4.png}
+	\caption*{Learning curve}
+\end{figure*}
 
 \clearpage
 

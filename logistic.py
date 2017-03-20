@@ -8,6 +8,12 @@ import math
 import tensorflow as tf
 from pylab import *
 import random as rn
+import matplotlib.pyplot as plt
+
+#global
+train_performance = []
+test_performance = []
+val_performance = []
 
 def get_keyword_set():
     set = ['pos', 'neg']
@@ -61,7 +67,7 @@ def get_train_batch(n, x_train, y_train): # n = image per actor in batch
 
 def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
     max_iter, print_iter, mini_batch_size, lam, W0, b0):
-    #global train_performance, test_performance, val_performance
+    global train_performance, test_performance, val_performance
     
     x = tf.placeholder(tf.float32, [None, x_train.shape[1]])
         
@@ -97,12 +103,15 @@ def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
             print ("i=",i)
             print ("Cost:", sess.run(reg_NLL, feed_dict={x: x_train, y_:y_train}))
             acc_tr = sess.run(accuracy,feed_dict={x: x_train, y_: y_train})
+            train_performance.append(acc_tr * 100)
             print ("Train:", acc_tr)
             
             acc_t = sess.run(accuracy, feed_dict={x: x_test, y_: y_test})
+            test_performance.append(acc_t * 100)
             print ("Test:", acc_t)
         
             acc_v = sess.run(accuracy,feed_dict={x: x_val, y_: y_val})
+            val_performance.append(acc_v * 100)
             print ("Validation:", acc_v)
         
             print ("Penalty:", sess.run(decay_penalty))
@@ -138,11 +147,11 @@ else:
 print("Done loading")
 
     
-alpha = 0.00001
-max_iter = 30000      
-print_iter = 500 # print every 500 iterations
+alpha = 0.0001
+max_iter = 10000      
+print_iter = 1000 # print every 500 iterations
 mini_batch_size = 50
-lam = 0.000001
+lam = 0.00001
 
 np.random.seed(100)
 W0 = tf.Variable(np.random.normal(0.0, 0.1, \
@@ -153,3 +162,15 @@ b0 = tf.Variable(np.random.normal(0.0, 0.1, \
 
 grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
     max_iter, print_iter, mini_batch_size, lam, W0, b0)
+
+
+x_axis = np.arange(max_iter / print_iter + 1) * print_iter
+plt.ylim(0,110)
+plt.plot(x_axis, test_performance, label="test")
+plt.plot(x_axis, train_performance, label="training")
+plt.plot(x_axis, val_performance, label="validation")
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, \
+    mode="expand", borderaxespad=0.)
+plt.xlabel('Iteration')
+plt.ylabel('Correctness(%)')
+plt.savefig("part4.png")
