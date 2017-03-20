@@ -170,26 +170,28 @@ def main():
     
     train_total = {k: train_pos.get(k, 0) + train_neg.get(k, 0) for k in set(train_pos) | set(train_neg)}
     
-    m = 0.2
-    k = 300
-    
     count_train_total = count_train_pos + count_train_neg
     
     P_pos = count_train_pos / count_train_total
     P_neg = count_train_neg / count_train_total
+    
+    m = 0.2
+    k = 290
 
     train_per = get_performance('train', m, k)
     val_per = get_performance('validation', m, k)
     test_per = get_performance('test', m, k)
     
+    print ("Training performance: "+str(train_per)+"%")
+    print ("Validation performance: "+str(val_per)+"%")
+    print ("Test performance: "+str(test_per)+"%")
+    
     # for m in np.arange(0.1, 0.3, 0.01):
-    #     for k in np.arange(270, 300, 1):
+    #     for k in np.arange(289, 295, 1):
     #         val_per = get_performance('validation', m, k)
     #         if (val_per > 70):
     #             print ("k="+str(k)+", m="+str(m)+", performance: "+str(val_per)+"%")
     
     
-    print ("Training performance: "+str(train_per)+"%")
-    print ("Validation performance: "+str(val_per)+"%")
-    print ("Test performance: "+str(test_per)+"%")
+    
 
