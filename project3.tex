@@ -68,13 +68,20 @@ The top 10 words that predicts negative are:\\
 
 \section*{Part 4}
 \paragraph{Question}
+Train a Logistic Regression model on the same dataset. For a single movie review, For a single review $r$ the input to the Logistic Regression model will be a $k$ -dimensional vector $v$ , where $v[k]=1$ if the $k$ -th keyword appears in the review $r$. The set of keywords consists of all the words that appear in all the reviews.\\
 
+Plot the learning curves (performance vs. iteration) of the Logistic Regression model. Describe how you selected the regularization parameter (and describe the experiments you used to select it).
 
 \paragraph{Answer}
 
 \clearpage
 
 \section*{Part 5}
+At test time, both Logistic Regression and Naive Bayes can be formulated as computing
+
+\[\theta_0+\theta_1I_1(x)+\theta_2I_2(x)+\cdots+\theta_kI_k(x) > thr\]
+
+in order to decide whether to classify $x$ as 1 or 0 . Explain, in each case, what the $\theta$‘s and the $I$‘s are.
 \paragraph{Question}
 
 
