@@ -6,6 +6,8 @@ from numpy import random
 from shutil import copy2
 import math
 import tensorflow as tf
+from pylab import *
+import random as rn
 
 def get_keyword_set():
     set = ['pos', 'neg']
@@ -106,7 +108,7 @@ def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
             print ("Penalty:", sess.run(decay_penalty))
                
     return sess.run(W0)
-    
+
 keyword = get_keyword_set() # get training set keyword
 if not os.path.exists("part4_x_train.txt"):
     x_train, y_train = setup_x_and_y('train', keyword)
@@ -115,9 +117,26 @@ if not os.path.exists("part4_x_train.txt"):
 else:
     x_train = np.loadtxt("part4_x_train.txt")
     y_train = np.loadtxt("part4_y_train.txt")
+
+
+if not os.path.exists("part4_x_train.txt"):
+    x_test, y_test = setup_x_and_y('test', keyword)
+    np.savetxt("part4_x_test.txt", x_test)
+    np.savetxt("part4_y_test.txt", y_test)
+else:
+    x_test = np.loadtxt("part4_x_test.txt")
+    y_test = np.loadtxt("part4_y_test.txt")
     
-x_test, y_test = setup_x_and_y('test', keyword)
-x_val, y_val = setup_x_and_y('validation', keyword)
+if not os.path.exists("part4_x_train.txt"):
+    x_val, y_val = setup_x_and_y('validation', keyword)
+    np.savetxt("part4_x_val.txt", x_val)
+    np.savetxt("part4_y_val.txt", y_val)
+else:
+    x_val = np.loadtxt("part4_x_val.txt")
+    y_val = np.loadtxt("part4_y_val.txt")
+    
+print("Done loading")
+
     
 alpha = 0.00001
 max_iter = 30000      
