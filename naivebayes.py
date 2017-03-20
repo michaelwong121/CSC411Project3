@@ -6,6 +6,7 @@ import numpy as np
 from numpy import random
 from shutil import copy2
 import math
+import heapq
 
 P_pos = 0
 P_neg = 0
@@ -17,6 +18,124 @@ train_total = {}
 count_train_pos = 0
 count_train_neg = 0
 count_train_total = 0
+
+
+def main():
+    #part1()
+    #part2()
+    part3()
+    
+
+def part1():
+    
+    # Count words: best, horrendous, awful in positive and negative reviews
+    
+    dict_pos = {}
+    dict_neg = {}
+    word_list = ["best", "horrendous", "awful"]
+    for word in word_list:
+        dict_pos[word] = 0
+        dict_neg[word] = 0
+    
+    for file in os.listdir('txt_sentoken/pos'):
+        with open('txt_sentoken/pos/' + file) as f:
+            file_list = re.split('\W+', f.read().lower())
+            file_list.remove('')
+            file_list = list(OrderedDict.fromkeys(file_list))
+            for word in word_list:
+                if word in file_list:
+                    dict_pos[word] += 1
+    
+    for file in os.listdir('txt_sentoken/neg'):
+        with open('txt_sentoken/neg/' + file) as f:
+            file_list = re.split('\W+', f.read().lower())
+            file_list.remove('')
+            file_list = list(OrderedDict.fromkeys(file_list))
+            for word in word_list:
+                if word in file_list:
+                    dict_neg[word] += 1
+    
+    print(dict_pos)
+    print(dict_neg)
+
+
+def part2():
+    
+    init()
+    
+    m = 0.2
+    k = 290
+
+    train_per = get_performance('train', m, k)
+    val_per = get_performance('validation', m, k)
+    test_per = get_performance('test', m, k)
+    
+    print ("Training performance: "+str(train_per)+"%")
+    print ("Validation performance: "+str(val_per)+"%")
+    print ("Test performance: "+str(test_per)+"%")
+
+
+def part3():
+    
+    if len(train_total) == 0:
+        init()
+    
+    heap_pos = []
+    heap_neg = []
+    
+    for word in train_pos:
+        P_pos_given_word = P_class_given_word(1, word)
+        heapq.heappush(heap_pos, (P_pos_given_word, word))
+    
+    for word in train_neg:
+        P_neg_given_word = P_class_given_word(0, word)
+        heapq.heappush(heap_neg, (P_neg_given_word, word))
+        
+    top_ten_pos = heapq.nlargest(10, heap_pos)
+    top_ten_neg = heapq.nlargest(10, heap_neg)
+    
+    print("Top 10 words that predicts positive:")
+    print(top_ten_pos)
+    print("Top 10 words that predicts negative:")
+    print(top_ten_neg)
+    
+
+def init():
+    """Set up the global variables"""
+    
+    global train_pos, train_neg, train_total
+    global count_train_pos, count_train_neg, count_train_total
+    global P_pos, P_neg
+    
+    #split_dataset()
+    train_pos, train_neg, count_train_pos, count_train_neg = get_wordcount('train')
+    
+    train_total = {k: train_pos.get(k, 0) + train_neg.get(k, 0) for k in set(train_pos) | set(train_neg)}
+    
+    count_train_total = count_train_pos + count_train_neg
+    
+    P_pos = count_train_pos / count_train_total
+    P_neg = count_train_neg / count_train_total
+
+
+def P_class_given_word(class_type, word):
+    global train_pos, train_neg, train_total
+    global count_train_pos, count_train_neg, count_train_total
+    global P_pos, P_neg
+    
+    P_word = math.log(train_total[word]/count_train_total)
+    
+    if class_type == 1:
+        # class_type = positive
+        P_word_given_class = math.log(train_pos[word]/count_train_pos)
+        P_class = math.log(P_pos)
+    else:
+        # class_type = negative
+        P_word_given_class = math.log(train_neg[word]/count_train_neg)
+        P_class = math.log(P_neg)
+        
+    return P_word_given_class + P_class - P_word
+
 
 def create_dir(dir_name):
     if not os.path.exists(dir_name):
@@ -157,41 +276,3 @@ def get_performance(path, m, k):
             neg_correct_count += 1
     print(path+" negative performance: "+str(neg_correct_count*100/neg_total)+"%")
     return ((pos_correct_count+neg_correct_count) * 100 / (pos_total+neg_total))
-
-
-def main():
-    
-    global train_pos, train_neg, train_total
-    global count_train_pos, count_train_neg, count_train_total
-    global P_pos, P_neg
-    
-    #split_dataset()
-    train_pos, train_neg, count_train_pos, count_train_neg = get_wordcount('train')
-    
-    train_total = {k: train_pos.get(k, 0) + train_neg.get(k, 0) for k in set(train_pos) | set(train_neg)}
-    
-    count_train_total = count_train_pos + count_train_neg
-    
-    P_pos = count_train_pos / count_train_total
-    P_neg = count_train_neg / count_train_total
-    
-    m = 0.2
-    k = 290
-
-    train_per = get_performance('train', m, k)
-    val_per = get_performance('validation', m, k)
-    test_per = get_performance('test', m, k)
-    
-    print ("Training performance: "+str(train_per)+"%")
-    print ("Validation performance: "+str(val_per)+"%")
-    print ("Test performance: "+str(test_per)+"%")
-    
-    # for m in np.arange(0.1, 0.3, 0.01):
-    #     for k in np.arange(289, 295, 1):
-    #         val_per = get_performance('validation', m, k)
-    #         if (val_per > 70):
-    #             print ("k="+str(k)+", m="+str(m)+", performance: "+str(val_per)+"%")
-    
-    
-    
-
