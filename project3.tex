@@ -77,16 +77,18 @@ Plot the learning curves (performance vs. iteration) of the Logistic Regression 
 \clearpage
 
 \section*{Part 5}
+\paragraph{Question}
 At test time, both Logistic Regression and Naive Bayes can be formulated as computing
 
 \[\theta_0+\theta_1I_1(x)+\theta_2I_2(x)+\cdots+\theta_kI_k(x) > thr\]
 
 in order to decide whether to classify $x$ as 1 or 0 . Explain, in each case, what the $\theta$‘s and the $I$‘s are.
-\paragraph{Question}
-
 
 \paragraph{Answer}
-
+Assume $x$ is one review which is a $k$-dimensional vector where $k$ is the total number of unique words in the set.\\
+$\theta_0$ is the bias.\\
+$I_i(x)$ is the $i$th word of input $x$. $I_i(x)$ is either 1 or 0, where 1 means that $i$th word is in review $x$, 0 means that $i$th word is not in review $x$.\\
+$\theta_i$ is $log(P(word_i | positive)) + log(P(positive)) - log(P(word_i | negative)) - log(P(negative))$
 \clearpage
 
 \section*{Part 6}
