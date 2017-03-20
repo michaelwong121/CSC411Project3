@@ -80,24 +80,27 @@ def part3():
     if len(train_total) == 0:
         init()
     
+    m = 0.2
+    k = 290
+    
     heap_pos = []
     heap_neg = []
     
     for word in train_pos:
-        P_pos_given_word = P_class_given_word(1, word)
+        P_pos_given_word = P_class_given_word(1, word, m, k)
         heapq.heappush(heap_pos, (P_pos_given_word, word))
     
     for word in train_neg:
-        P_neg_given_word = P_class_given_word(0, word)
+        P_neg_given_word = P_class_given_word(0, word, m, k)
         heapq.heappush(heap_neg, (P_neg_given_word, word))
         
     top_ten_pos = heapq.nlargest(10, heap_pos)
     top_ten_neg = heapq.nlargest(10, heap_neg)
     
     print("Top 10 words that predicts positive:")
-    print(top_ten_pos)
+    print([x[1] for x in top_ten_pos])
     print("Top 10 words that predicts negative:")
-    print(top_ten_neg)
+    print([x[1] for x in top_ten_neg])
     
 
 def init():
@@ -118,23 +121,16 @@ def init():
     P_neg = count_train_neg / count_train_total
 
 
-def P_class_given_word(class_type, word):
+def P_class_given_word(class_type, word, m, k):
     global train_pos, train_neg, train_total
     global count_train_pos, count_train_neg, count_train_total
     global P_pos, P_neg
     
+    word_list = [word]
     P_word = math.log(train_total[word]/count_train_total)
-    
-    if class_type == 1:
-        # class_type = positive
-        P_word_given_class = math.log(train_pos[word]/count_train_pos)
-        P_class = math.log(P_pos)
-    else:
-        # class_type = negative
-        P_word_given_class = math.log(train_neg[word]/count_train_neg)
-        P_class = math.log(P_neg)
+    P_word_given_class = log_P_class_given_words(word_list, m, k, class_type)
         
-    return P_word_given_class + P_class - P_word
+    return P_word_given_class - P_word
 
 
 def create_dir(dir_name):
@@ -217,7 +213,7 @@ def log_P_class_given_words(word_list, m, k, cla):
         P_class = P_pos
     else:
         P_class = P_neg
-    return P_words_cla * P_class
+    return P_words_cla + math.log(P_class)
     
     
 def log_sum_P_words_given_class(word_list, m, k, cla):
@@ -240,7 +236,7 @@ def log_sum_P_words_given_class(word_list, m, k, cla):
             p_word = math.log((word_count + m * k)/(count_train_neg + k))
         log_sum += p_word
 
-    return math.exp(log_sum)
+    return log_sum
 
 
 def predict_review(word_list, m, k):

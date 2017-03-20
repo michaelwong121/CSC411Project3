@@ -55,8 +55,15 @@ Based on the formula above, we only need to compare $log(P(a_1|positive))+\cdots
 List the 10 words that most strongly predict that the review is positive, and the 10 words that most strongly predict that the review is negative. State how you obtained those in terms of the the conditional probabilities used in the Naive Bayes algorithm.
 
 \paragraph{Answer}
-\[P(class | a_i) = \frac{P(a_i | class) P(class)}{P(a_i)}\]
-
+\begin{align*}
+P(class | a_i) &= \frac{P(a_i | class) P(class)}{P(a_i)}\\
+P(class | a_i) &= exp(log(P(a_i | class)) + log(P(class)) - log(P(a_i)))
+\end{align*}
+We use the formula above to compute and compare $P(positive | a_i)$ for all words in positive reviews and $P(negative | a_i)$ for all words in negative reviews.\\
+The top 10 words that predicts positive are:\\
+'ziembicki', 'unites', 'ulu', 'torrance', 'toiling', 'tiegs', 'swope', 'salability', 'rothchild', 'rollergirl'\\
+The top 10 words that predicts negative are:\\
+'zaltar', 'workout', 'unmercifully', 'szwarc', 'stuffing', 'slunk', 'salkinds', 'refugees', 'popeye', 'omegahedron'\\
 \clearpage
 
 \section*{Part 4}
