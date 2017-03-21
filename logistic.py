@@ -9,6 +9,7 @@ import tensorflow as tf
 from pylab import *
 import random as rn
 import matplotlib.pyplot as plt
+import heapq
 
 #global
 train_performance = []
@@ -119,58 +120,88 @@ def grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
     return sess.run(W0)
 
 keyword = get_keyword_set() # get training set keyword
-if not os.path.exists("part4_x_train.txt"):
-    x_train, y_train = setup_x_and_y('train', keyword)
-    np.savetxt("part4_x_train.txt", x_train)
-    np.savetxt("part4_y_train.txt", y_train)
-else:
-    x_train = np.loadtxt("part4_x_train.txt")
-    y_train = np.loadtxt("part4_y_train.txt")
 
-
-if not os.path.exists("part4_x_train.txt"):
-    x_test, y_test = setup_x_and_y('test', keyword)
-    np.savetxt("part4_x_test.txt", x_test)
-    np.savetxt("part4_y_test.txt", y_test)
-else:
-    x_test = np.loadtxt("part4_x_test.txt")
-    y_test = np.loadtxt("part4_y_test.txt")
+if not os.path.exists("part4_theta.txt"):
+    if not os.path.exists("part4_x_train.txt"):
+        x_train, y_train = setup_x_and_y('train', keyword)
+        np.savetxt("part4_x_train.txt", x_train)
+        np.savetxt("part4_y_train.txt", y_train)
+    else:
+        x_train = np.loadtxt("part4_x_train.txt")
+        y_train = np.loadtxt("part4_y_train.txt")
     
-if not os.path.exists("part4_x_train.txt"):
-    x_val, y_val = setup_x_and_y('validation', keyword)
-    np.savetxt("part4_x_val.txt", x_val)
-    np.savetxt("part4_y_val.txt", y_val)
-else:
-    x_val = np.loadtxt("part4_x_val.txt")
-    y_val = np.loadtxt("part4_y_val.txt")
     
-print("Done loading")
+    if not os.path.exists("part4_x_test.txt"):
+        x_test, y_test = setup_x_and_y('test', keyword)
+        np.savetxt("part4_x_test.txt", x_test)
+        np.savetxt("part4_y_test.txt", y_test)
+    else:
+        x_test = np.loadtxt("part4_x_test.txt")
+        y_test = np.loadtxt("part4_y_test.txt")
+        
+    if not os.path.exists("part4_x_val.txt"):
+        x_val, y_val = setup_x_and_y('validation', keyword)
+        np.savetxt("part4_x_val.txt", x_val)
+        np.savetxt("part4_y_val.txt", y_val)
+    else:
+        x_val = np.loadtxt("part4_x_val.txt")
+        y_val = np.loadtxt("part4_y_val.txt")
+        
+    print("Done loading")
 
+    alpha = 0.0001
+    max_iter = 10000      
+    print_iter = 1000 # print every 1000 iterations
+    mini_batch_size = 50
+    lam = 0.00001
     
-alpha = 0.0001
-max_iter = 10000      
-print_iter = 1000 # print every 500 iterations
-mini_batch_size = 50
-lam = 0.00001
+    np.random.seed(100)
+    W0 = tf.Variable(np.random.normal(0.0, 0.1, \
+        (36307, 2)).astype(float32))
+    np.random.seed(101)
+    b0 = tf.Variable(np.random.normal(0.0, 0.1, \
+        (2)).astype(float32))
+    
+    theta = grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
+        max_iter, print_iter, mini_batch_size, lam, W0, b0)
+    np.savetxt("part4_theta.txt", theta)
+    
+    x_axis = np.arange(max_iter / print_iter + 1) * print_iter
+    plt.ylim(0,110)
+    plt.plot(x_axis, test_performance, label="test")
+    plt.plot(x_axis, train_performance, label="training")
+    plt.plot(x_axis, val_performance, label="validation")
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, \
+        mode="expand", borderaxespad=0.)
+    plt.xlabel('Iteration')
+    plt.ylabel('Correctness(%)')
+    plt.savefig("part4.png")
 
-np.random.seed(100)
-W0 = tf.Variable(np.random.normal(0.0, 0.1, \
-    (36307, 2)).astype(float32))
-np.random.seed(101)
-b0 = tf.Variable(np.random.normal(0.0, 0.1, \
-    (2)).astype(float32))
-
-grad_descent(x_test, y_test, x_val, y_val, x_train, y_train, alpha, \
-    max_iter, print_iter, mini_batch_size, lam, W0, b0)
-
-
-x_axis = np.arange(max_iter / print_iter + 1) * print_iter
-plt.ylim(0,110)
-plt.plot(x_axis, test_performance, label="test")
-plt.plot(x_axis, train_performance, label="training")
-plt.plot(x_axis, val_performance, label="validation")
-plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, \
-    mode="expand", borderaxespad=0.)
-plt.xlabel('Iteration')
-plt.ylabel('Correctness(%)')
-plt.savefig("part4.png")
+if not os.path.exists("part6_logistic.txt"):
+    theta = np.loadtxt("part4_theta.txt")
+    heap = []
+    dict_class = {}
+    for i in range(0, theta.shape[0]):
+        word = keyword[i]
+        diff = theta[i, 0] - theta[i, 1]
+        if diff >= 0:
+            # predicts positive
+            dict_class[word] = 1
+        else:
+            # predicts negative
+            dict_class[word] = 0
+        heapq.heappush(heap, (abs(diff), word))
+        
+    top_100_diff = heapq.nlargest(100, heap)
+    f = open("part6_logistic.txt", "w")
+    counter = 1
+    for x in top_100_diff:
+        if (dict_class[x[1]] == 1):
+            f.write("positive %s" % x[1])
+        else:
+            f.write("negative %s" % x[1])
+        if (counter < 100):
+            f.write("\n")
+        counter += 1
+    f.close()
+    
