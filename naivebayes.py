@@ -325,3 +325,7 @@ def get_performance(path, m, k):
             neg_correct_count += 1
     print(path+" negative performance: "+str(neg_correct_count*100/neg_total)+"%")
     return ((pos_correct_count+neg_correct_count) * 100 / (pos_total+neg_total))
+    
+    
+if __name__ == "__main__":
+    main()

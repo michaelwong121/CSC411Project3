@@ -9,6 +9,7 @@ import tensorflow as tf
 from pylab import *
 import random as rn
 import matplotlib.pyplot as plt
+from part8 import main
 
 emb = np.load("embeddings.npz")["emb"] # 41524 x 128
 
@@ -188,3 +189,5 @@ plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, \
 plt.xlabel('Iteration')
 plt.ylabel('Correctness(%)')
 plt.savefig("part7.png")
+
+main()

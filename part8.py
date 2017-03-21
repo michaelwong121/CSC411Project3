@@ -25,6 +25,12 @@ ind = np.load("embeddings.npz")["word2ind"].flatten()[0]
 inv_ind = {v: k for k, v in ind.items()}
 
 
+def main():
+    get_similar_words("story", 10)
+    get_similar_words("good", 10)
+    print(operation(["student", "teacher"], ["+"]))
+    print(operation(["war", "man"], ["+"]))
+
 def get_cosine_distance(v1, v2):
     return -np.dot(v1, v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
 
