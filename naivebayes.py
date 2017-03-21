@@ -29,6 +29,9 @@ def main():
     print("-----------------------------")
     print("Part 3:")
     part3()
+    print("-----------------------------")
+    print("Part 6 naive:")
+    part6_naive()
     
 
 def part1():
@@ -82,6 +85,8 @@ def part2():
 
 def part3():
     
+    global train_pos, train_neg, train_total
+    
     if len(train_total) == 0:
         init()
     
@@ -106,6 +111,45 @@ def part3():
     print([x[1] for x in top_ten_pos])
     print("Top 10 words that predicts negative:")
     print([x[1] for x in top_ten_neg])
+    
+
+def part6_naive():
+    
+    global train_pos, train_neg, train_total
+    
+    if len(train_total) == 0:
+        init()
+    
+    m = 0.2
+    k = 290
+    
+    heap = []
+    dict_class = {}
+    
+    for word in train_total:
+        word_list = [word]
+        diff = log_sum_P_words_given_class(word_list, m, k, 1) - \
+            log_sum_P_words_given_class(word_list, m, k, 0)
+        # predicts positive
+        if diff >= 0:
+            dict_class[word] = 1
+        # predicts negative
+        else:
+            dict_class[word] = 0
+        heapq.heappush(heap, (abs(diff), word))
+        
+    top_100_diff = heapq.nlargest(100, heap)
+    f = open("part6_naive.txt", "w")
+    counter = 1
+    for x in top_100_diff:
+        if (dict_class[x[1]] == 1):
+            f.write("positive %s" % x[1])
+        else:
+            f.write("negative %s" % x[1])
+        if (counter < 100):
+            f.write("\n")
+        counter += 1
+    f.close()
     
 
 def init():
