@@ -24,37 +24,49 @@ ind = np.load("embeddings.npz")["word2ind"].flatten()[0]
 inv_ind = {v: k for k, v in ind.items()}
 
 
-def get_sorted_embedding(word1, word2):
+def get_sorted_words(word1, word2):
     if (word1 < word2):
-        this_x = np.concatenate((emb[inv_ind[word1]], emb[inv_ind[word2]]))
+        return word1, word2
     else:
-        this_x = np.concatenate((emb[inv_ind[word2]], emb[inv_ind[word1]]))
-    return this_x
+        return word2, word1
 
-def get_training_set(subset_no):
+def get_training_set(subset_no, path):
     
     x = np.zeros((0,256))
     y = np.zeros((0,2))
     rn.seed(0)
-    idx = rn.sample(range(1000), subset_no) # take n random reviews from the file
+    dir = os.listdir(path + '/pos')
+    idx = rn.sample(range(len(dir)), subset_no) # take n random reviews from the file
     print(idx)
-    dir = os.listdir('txt_sentoken/pos')
+    pair_list = []
+    keyword = []
     for i in range(subset_no):
-        with open('txt_sentoken/pos/' + dir[idx[i]]) as f:
+        with open(path + '/pos/' + dir[idx[i]]) as f:
+            
             file_list = re.split('\W+', f.read().lower())
             file_list.remove('')
+            keyword += file_list
             for k in range(len(file_list) - 1): # -1 because last word dont have next word
                 if (file_list[k] in inv_ind) and (file_list[k+1] in inv_ind):
-                    this_x = get_sorted_embedding(file_list[k], file_list[k+1])
+                    word1, word2 = get_sorted_words(file_list[k], file_list[k+1])
+                    this_x = np.concatenate((emb[inv_ind[word1]], emb[inv_ind[word2]]))
                     x = np.vstack((x, this_x))
                     y = np.vstack((y, np.array([1,0])))
+                    pair_list.append((word1, word2))
                     
-                    rand_idx = k
-                    while (abs(rand_idx - k) <= 1) or (file_list[rand_idx] not in inv_ind):
-                        rand_idx = rn.randint(0, len(file_list)-1)
-                    this_x = get_sorted_embedding(file_list[k], file_list[rand_idx])
-                    x = np.vstack((x, this_x))
-                    y = np.vstack((y, np.array([0,1])))
+    keyword = list(OrderedDict.fromkeys(keyword))
+    size = x.shape[0]
+    for i in range(size):
+        word1 = keyword[rn.randint(0, len(keyword) - 1)]
+        word2 = keyword[rn.randint(0, len(keyword) - 1)]
+        word1, word2 = get_sorted_words(word1, word2)
+        while word1 not in inv_ind or word2 not in inv_ind or (word1, word2) in pair_list:
+            word1 = keyword[rn.randint(0, len(keyword) - 1)]
+            word2 = keyword[rn.randint(0, len(keyword) - 1)]
+            word1, word2 = get_sorted_words(word1, word2) 
+        this_x = np.concatenate((emb[inv_ind[word1]], emb[inv_ind[word2]]))
+        x = np.vstack((x, this_x))
+        y = np.vstack((y, np.array([0, 1])))
     return x, y
 
 def get_train_batch(n, x_train, y_train):
@@ -69,62 +81,55 @@ def get_train_batch(n, x_train, y_train):
         y = vstack((y, y_train[idx[k]]))
     return x, y
 
-def f(x, y, theta):
-    x = vstack( (ones((1, x.shape[1])), x))
-    return sum( (y - dot(theta.T,x)) ** 2)
 
-def df(x, y, theta):
-    x = vstack( (ones((1, x.shape[1])), x))
-    return -2*sum((y-dot(theta.T, x))*x, 1)
-    
-def grad_descent(f, df, x, y, init_t, alpha):
-    EPS = 1e-10   #EPS = 10**(-10)
-    prev_t = init_t-10*EPS
-    t = init_t.copy()
-    max_iter = 30000
-    iter  = 0
-    while norm(t - prev_t) >  EPS and iter < max_iter:
-        prev_t = t.copy()
-        t -= alpha*df(x, y, t)
-        iter += 1
-        if (iter % 500 == 0):
-            print ("Cost:", f(x, y, t))
-    return t
+if not os.path.exists("part7_x_train.txt"):
+    x_train, y_train = get_training_set(20, 'train')
+    np.savetxt("part7_x_train.txt", x_train)
+    np.savetxt("part7_y_train.txt", y_train)
+else:
+    x_train = np.loadtxt("part7_x_train.txt")
+    y_train = np.loadtxt("part7_y_train.txt")
+print("finish loading training!")
 
+if not os.path.exists("part7_x_test.txt"):
+    x_test, y_test = get_training_set(4, 'test')
+    np.savetxt("part7_x_test.txt", x_test)
+    np.savetxt("part7_y_test.txt", y_test)
+else:
+    x_test = np.loadtxt("part7_x_test.txt")
+    y_test = np.loadtxt("part7_y_test.txt")
+print("finish loading test!")
 
-x_train, y_train = get_training_set(3)
-
-print("finish loading!")
-
-"""
-x_train = x_train.T
-y_train = y_train.T
-t0 = np.array(np.zeros((257,), dtype=double)) # need to change to rand number
-theta = grad_descent(f, df, x_train, y_train, t0, 0.000002)
+if not os.path.exists("part7_x_val.txt"):
+    x_val, y_val = get_training_set(4, 'validation')
+    np.savetxt("part7_x_val.txt", x_val)
+    np.savetxt("part7_y_val.txt", y_val)
+else:
+    x_val = np.loadtxt("part7_x_val.txt")
+    y_val = np.loadtxt("part7_y_val.txt")
+print("finish loading val!")
 
 
-
-
-
-"""
 train_performance = []
+test_performance = []
+val_performance = []
 
-alpha = 1e-10
-max_iter = 30000      
-print_iter = 1000 
-mini_batch_size = 1500
-lam = 0.00000
+alpha = 1e-4
+max_iter = 2000      
+print_iter = 1000
+mini_batch_size = 500
+lam = 0.00001
 
 np.random.seed(100)
 W0 = tf.Variable(np.random.normal(0.0, 0.1, \
-    (256, 2)).astype(float32))
+    (256, 2)).astype(float32)/math.sqrt(256 * 2))
 np.random.seed(101)
 b0 = tf.Variable(np.random.normal(0.0, 0.1, \
-    (2)).astype(float32))
+    (2)).astype(float32)/math.sqrt(2))
 
 x  = tf.placeholder(tf.float32, [None, x_train.shape[1]])
         
-layer1 = tf.nn.sigmoid(tf.matmul(x, W0)+b0)
+layer1 = tf.sigmoid(tf.matmul(x, W0)+b0)
 
 y = tf.nn.softmax(layer1)
 y_ = tf.placeholder(tf.float32, [None, y_train.shape[1]])
@@ -147,7 +152,6 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
 for i in range(max_iter+1):
-    # <-change size of mini batch here. Max is 75 for now
     batch_xs, batch_ys = get_train_batch(mini_batch_size, x_train, y_train) 
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
     
@@ -155,13 +159,14 @@ for i in range(max_iter+1):
     if i % print_iter == 0:
         print ("i=",i)
         print ("Cost:", sess.run(reg_NLL, feed_dict={x: x_train, y_:y_train}))
+        #print ("Mat mul:", sess.run(tf.matmul(x, W0)+b0, feed_dict={x: x_train, y_:y_train}))
         #print ("y: ", sess.run(y , feed_dict={x: x_train, y_:y_train}))
         #print ("argmax:", sess.run(tf.argmax(y, 1), feed_dict={x: x_train, y_:y_train}))
         #print ("prediction:", sess.run(correct_prediction, feed_dict={x: x_train, y_:y_train}))
         acc_tr = sess.run(accuracy,feed_dict={x: x_train, y_: y_train})
-        #train_performance.append(acc_tr * 100)
+        train_performance.append(acc_tr * 100)
         print ("Train:", acc_tr)
-        """
+        
         acc_t = sess.run(accuracy, feed_dict={x: x_test, y_: y_test})
         test_performance.append(acc_t * 100)
         print ("Test:", acc_t)
@@ -171,4 +176,14 @@ for i in range(max_iter+1):
         print ("Validation:", acc_v)
     
         print ("Penalty:", sess.run(decay_penalty))
-        """
+        
+x_axis = np.arange(max_iter / print_iter + 1) * print_iter
+plt.ylim(0,110)
+plt.plot(x_axis, test_performance, label="test")
+plt.plot(x_axis, train_performance, label="training")
+plt.plot(x_axis, val_performance, label="validation")
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, \
+    mode="expand", borderaxespad=0.)
+plt.xlabel('Iteration')
+plt.ylabel('Correctness(%)')
+plt.savefig("part7.png")

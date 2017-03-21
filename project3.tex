@@ -130,7 +130,23 @@ Although not many words are in common, it is clear to see that most of the words
 
 
 \paragraph{Answer}
+When working on this part of the assignment, we first need to set up the $x$'s of the each of training, test, and validation set. Since in this part of the assignment, we are just trying to determine if we can predict if words would occur together, a review being positive or negative does not matter too much. Thus we decided to just take files from the $pos$ review within each dataset.
 
+When setting up the x for each dataset, we will first randomly choose multiple files within the dataset (because looping through all files would take too long). Then for each file, we will create a list of lower case words that has the punctuation removed. Then we will loop through that list, and for each pair of neighbouring words, we will find the corresponding embedding, concatenate it, and stack it into $x$. Note that if the any of the words doesn't have a corresponding embedding, it would be ignored. We will label this as $[1, 0]$ to indicates the words are neighbouring, and vstack it to the y.
+
+When looping through the list of words in all the randomly chosen files within the dataset, we will keep track of the set of unique keywords. We will also keep track of the set of unique pairs of words that we added into $x$. After looping all the randomly selected files, we will have to create sample $x$'s where the two words in $x$ is not neighbouring. To do this, we will randomly pick two word from the unique keyword set, make sure they are not neighbouring (by checking the list of pair words), find the corrsponding embedding, and add the concatenation into $x$. We will label this as $[0, 1]$ to indicate the words are not neighbouring, and vstack it to y.
+
+After obtaining $x\_train, x\_test,$ and $x\_val$, we will pass them into a tensorflow model with the following architecture:
+\begin {itemize}
+	\item Input layer has size $256$ (concatenation of 2 vectors with size 128).
+	\item Output layer that has two outputs (the two classifiers). Each outputs if fully connected with the layer below. The activation function is sigmoid.
+	\item The weight that connects input to output layer is randomly generated.
+	\item We placed a softmax on top the output layer, and we use the negative log loss function as our cost function.
+	\item We added a L2 regularization.
+	\item When training, we will use a mini-batch. We also use the Adam Optimizer for each training step, which is a variant of gradient descent.
+\end {itemize}
+
+There are multiple parameters when it comes to the model aboved: $\alpha, \lambda$, mini-batch size etc. As usual, they are chosen based on the best validation results through trial and error. As for how many files we are randomly picking when setting up the $x$'s, we want to pick a number that gives a big enough data within the dataset while making sure the runtime does not take too long. 
 
 \clearpage
 
