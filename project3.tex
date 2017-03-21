@@ -139,11 +139,17 @@ Although not many words are in common, it is clear to see that most of the words
 
 \section*{Part 8}
 \paragraph{Question}
-
+The reason word2vec works is that words that appear in similar contexts have similar embeddings (in the sense that the Cosine or Euclidean distance between the embeddings is small). Investigate this by finding the 10 words whose embeddings are closest to the embedding of “story”, and the the 10 words whose embeddings are closest to the embedding of “good.” Find two more interesting examples like that that demonstrate that word2vec works.
 
 \paragraph{Answer}
-
-
+The similar words of 'story' we found using either euclidean distance or cosine distance are:\\
+'plot', 'film', 'benito', 'simmer', 'sitter', 'lift', 'domineering', 'ricci', 'interviews', 'acclaim'\\
+The similar words of 'good' we found using either euclidean distance or cosine distance are:\\
+'bad', 'great', 'wonderful', 'reinforcing', 'decent', 'funny', 'manipulate', 'underused', 'admiral', 'perplexing'\\
+The other interesting examples we get are:\\
+"teacher" + "student" = "expects"\\
+"war" + "man" = "divesting"\\
+(Note: we found the resulting word after operation by the embedding vector with closest cosine distance but not one of the words used for calculation)
 \clearpage
 
 
