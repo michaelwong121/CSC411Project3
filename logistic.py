@@ -177,8 +177,12 @@ if not os.path.exists("part4_theta.txt"):
     plt.ylabel('Correctness(%)')
     plt.savefig("part4.png")
 
+theta = np.loadtxt("part4_theta.txt")
+# Print theta
+print("theta average = %f" % np.average(abs(theta[:,0] - theta[:,1])))
+print("theta standard deviation = %f" % np.std(abs(theta[:,0] - theta[:,1])))
+
 if not os.path.exists("part6_logistic.txt"):
-    theta = np.loadtxt("part4_theta.txt")
     heap = []
     dict_class = {}
     for i in range(0, theta.shape[0]):

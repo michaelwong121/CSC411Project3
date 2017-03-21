@@ -141,6 +141,10 @@ def part6_naive():
     top_100_diff = heapq.nlargest(100, heap)
     f = open("part6_naive.txt", "w")
     counter = 1
+    # Print theta
+    thetas = np.array([x[0] for x in top_100_diff])
+    print("theta average = %f" % np.average(abs(thetas)))
+    print("theta standard deviation = %f" % np.std(thetas))
     for x in top_100_diff:
         if (dict_class[x[1]] == 1):
             f.write("positive %s" % x[1])
