@@ -115,7 +115,7 @@ test_performance = []
 val_performance = []
 
 alpha = 1e-4
-max_iter = 2000      
+max_iter = 15000      
 print_iter = 1000
 mini_batch_size = 500
 lam = 0.00001
@@ -176,7 +176,8 @@ for i in range(max_iter+1):
         print ("Validation:", acc_v)
     
         print ("Penalty:", sess.run(decay_penalty))
-        
+
+plt.figure(1)
 x_axis = np.arange(max_iter / print_iter + 1) * print_iter
 plt.ylim(0,110)
 plt.plot(x_axis, test_performance, label="test")
