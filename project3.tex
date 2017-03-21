@@ -109,8 +109,20 @@ $\theta_i = log(P(word_i | positive))  - log(P(word_i | negative))$
 \paragraph{Question}
 Compare the top 100 $\theta$s that you obtained using Naive Bayes and Logistic Regression.
 \paragraph{Answer}
+By comparing the top 100 $\theta$s with corresponding words from Naive Bayes and Logistic Regression, we found that:\\
 
+Common positive words are:\\
+{'hilarious', 'outstanding', 'terrific', 'change', 'memorable'}\\
 
+Common negative words are:\\
+{'bad', 'waste', 'stupid', 'nothing', 'boring'}\\
+
+Number of positive words from Naive Bayes = 59\\
+Number of positive words from Logistic Regression = 40\\
+Number of negative words from Naive Bayes = 41\\
+Number of negative words from Logistic Regression = 60\\
+
+Although not many words are in common, it is clear to see that most of the words do strongly predicts positive or negative.
 \clearpage
 
 \section*{Part 7}
