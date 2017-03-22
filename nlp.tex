@@ -102,7 +102,8 @@ in order to decide whether to classify $x$ as 1 or 0 . Explain, in each case, wh
 Assume $x$ is one review which is a $k$-dimensional vector where $k$ is the total number of unique words in the set.\\
 $\theta_0 = log(P(positive)) - log(P(negative))$.\\
 $I_i(x)$ is the $i$th word of input $x$. $I_i(x)$ is either 1 or 0, where 1 means that $i$th word is in review $x$, 0 means that $i$th word is not in review $x$.\\
-$\theta_i = log(P(word_i | positive))  - log(P(word_i | negative))$
+For Naive Bayes, $\theta_i = log(P(word_i | positive))  - log(P(word_i | negative))$.\\
+For Logistic Regression, where $\theta_i = (\theta_i^{(1)}, \theta_i^{(2)})$, $\theta_i^{(1)} = log(P(word_i | positive))$ and $\theta_i^{(2)} = log(P(word_i | negative))$
 \clearpage
 
 \section*{Part 6}
